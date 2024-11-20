@@ -1,0 +1,264 @@
+
+openmp
+sudo apt-get install build-essential
+sudo apt-get install gcc
+sudo apt-get install g++
+
+
+#include <stdio.h>
+#include <omp.h>
+
+int main() {
+    int n = 1000000;
+    int sum = 0;
+    int arr[n];
+
+    // Initialize the array
+    for (int i = 0; i < n; i++) {
+        arr[i] = 1; // Assign each element a value of 1
+    }
+
+    // Parallelize the loop using OpenMP
+    #pragma omp parallel for reduction(+:sum)
+    for (int i = 0; i < n; i++) {
+        sum += arr[i];
+    }
+
+    printf("The sum of the array is: %d\n", sum);
+    return 0;
+}
+
+
+
+
+
+gcc -o omp_example omp_example.c -fopenmp
+
+./omp_example
+
+
+
+
+mpi 
+
+ sudo apt install python3
+ sudo apt install -y -qq mpich
+ sudo apt install python3-pip
+ pip install mpi4py
+
+#include <stdio.h>
+#include <mpi.h>
+
+int main(int argc, char *argv[]) {
+    int rank, size;
+
+    // Initialize the MPI environment
+    MPI_Init(&argc, &argv);
+
+    // Get the rank of the process
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+    // Get the number of processes
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+    // Print a message from each process
+    printf("Hello from process %d out of %d processes\n", rank, size);
+
+    // Finalize the MPI environment
+    MPI_Finalize();
+
+    return 0;
+}
+
+
+
+
+
+ Compile the MPI program
+To compile the program, use mpicc (the MPI C compiler):
+
+
+mpicc -o mpi_hello mpi_hello.c
+
+
+Step 4: Run the MPI program
+
+mpiexec -n 4 ./mpi_hello
+
+
+
+
+spark:
+
+
+
+### Step 1: Install Java
+
+```bash
+sudo apt update
+sudo apt install openjdk-8-jdk
+```
+
+Verify Java installation:
+
+```bash
+java -version
+```
+
+### Step 2: Install Scala
+
+```bash
+sudo apt-get install scala
+```
+
+Verify Scala installation:
+
+```bash
+scala -version
+```
+
+### Step 3: Install Apache Spark
+
+1. **Download Apache Spark**:
+   Visit the [Apache Spark website](https://spark.apache.org/downloads.html) and download the latest version of Spark. You can also use `wget` to download directly to your Linux machine:
+
+   ```bash
+   wget https://downloads.apache.org/spark/spark-3.5.0/spark-3.5.0-bin-hadoop3.tgz
+   ```
+
+2. **Extract Spark tarball**:
+
+   ```bash
+   tar -xvzf spark-3.5.0-bin-hadoop3.tgz
+   ```
+
+3. **Move Spark to the desired location**:
+
+   ```bash
+   sudo mv spark-3.5.0-bin-hadoop3 /opt/spark
+   ```
+
+4. **Set up environment variables**:
+   Open the `.bashrc` file and add the following lines to set up Spark and Java environment variables:
+
+   ```bash
+   export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+   export SPARK_HOME=/opt/spark
+   export PATH=$PATH:$SPARK_HOME/bin:$JAVA_HOME/bin
+   ```
+
+   After editing, apply the changes:
+
+   ```bash
+   source ~/.bashrc
+   ```
+
+### Step 4: Install Hadoop (Optional for Running Spark in Cluster Mode)
+
+If you want to run Spark in cluster mode with Hadoop, you'll need to install Hadoop as well.
+
+1. Download Hadoop from the [Apache Hadoop website](https://hadoop.apache.org/releases.html) or use `wget`:
+
+   ```bash
+   wget https://downloads.apache.org/hadoop/common/hadoop-3.3.4/hadoop-3.3.4.tar.gz
+   ```
+
+2. Extract Hadoop:
+
+   ```bash
+   tar -xvzf hadoop-3.3.4.tar.gz
+   ```
+
+3. Set Hadoop environment variables similarly to Spark. Add to `.bashrc`:
+
+   ```bash
+   export HADOOP_HOME=/opt/hadoop-3.3.4
+   export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
+   ```
+
+4. Apply changes:
+
+   ```bash
+   source ~/.bashrc
+   ```
+
+### Step 5: Verify Spark Installation
+
+To verify that Spark is installed correctly, run:
+
+```bash
+spark-shell
+```
+
+This should start the Spark shell in interactive mode.
+
+### Step 6: Run a Spark Program
+
+1. **Create a simple Spark application**:
+   Create a new file `wordcount.scala` with the following Scala code:
+
+   ```scala
+   import org.apache.spark.SparkConf
+   import org.apache.spark.SparkContext
+
+   object WordCount {
+     def main(args: Array[String]) {
+       // Initialize SparkContext
+       val conf = new SparkConf().setAppName("WordCount").setMaster("local")
+       val sc = new SparkContext(conf)
+
+       // Read text file
+       val textFile = sc.textFile("input.txt")
+
+       // Perform a word count operation
+       val wordCount = textFile.flatMap(line => line.split(" "))
+                               .map(word => (word, 1))
+                               .reduceByKey(_ + _)
+
+       // Save the result to a file
+       wordCount.saveAsTextFile("output")
+     }
+   }
+   ```
+
+2. **Compile the program**:
+   Use `scalac` to compile the `wordcount.scala` file:
+
+   ```bash
+   scalac wordcount.scala
+   ```
+
+3. **Run the program**:
+   You can submit the compiled application to Spark using the `spark-submit` command:
+
+   ```bash
+   spark-submit --class WordCount --master local wordcount.jar
+   ```
+
+   (Make sure to package your code into a JAR file if using `spark-submit` with a compiled program.)
+
+4. **Check the output**:
+   After running the program, you should see the `output` directory in your current directory containing the result of the word count.
+
+### Step 7: Run Spark in Cluster Mode (Optional)
+
+If you want to run Spark in a cluster mode, configure the `spark-env.sh` file and set up Hadoop and Spark in a distributed environment. You can start a standalone Spark cluster using:
+
+```bash
+start-master.sh
+start-worker.sh <master-url>
+```
+
+This will run Spark in a distributed manner where you can submit jobs to multiple workers.
+
+### Conclusion
+
+By following these steps, you can set up and run Apache Spark in standalone or cluster mode on Linux. The example program demonstrates a basic word count operation, which you can modify for more complex data processing tasks.
+
+
+
+
+
+
+
+
